@@ -13,6 +13,7 @@
 
 import argparse
 import logging
+import mimetypes
 import multiprocessing as mp
 import os
 import os.path
@@ -34,6 +35,11 @@ from spiderfoot import SpiderFootDb
 from spiderfoot import SpiderFootCorrelator
 from spiderfoot.logger import logListenerSetup, logWorkerSetup
 from spiderfoot import __version__
+
+# On Windows, Python reads MIME types from the registry, which often maps
+# .js to text/plain. Browsers then refuse to run the web UI scripts.
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 scanId = None
 dbh = None
