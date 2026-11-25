@@ -41,6 +41,19 @@ from spiderfoot import __version__
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
+
+def _ignore_static_cache_validators() -> None:
+    """Always send static files in full, with fresh headers.
+
+    A 304 reply lets the browser reuse a cached copy with its old headers,
+    so a file cached with the wrong MIME type would stay broken.
+    """
+    for header in ('If-Modified-Since', 'If-None-Match'):
+        cherrypy.request.headers.pop(header, None)
+
+
+cherrypy.tools.ignore_cache_validators = cherrypy.Tool('on_start_resource', _ignore_static_cache_validators)
+
 scanId = None
 dbh = None
 
@@ -495,6 +508,7 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
         },
         '/static': {
             'tools.staticdir.on': True,
+            'tools.ignore_cache_validators.on': True,
             'tools.staticdir.dir': 'static',
             'tools.staticdir.root': f"{os.path.dirname(os.path.abspath(__file__))}/spiderfoot"
         }
